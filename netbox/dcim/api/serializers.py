@@ -674,7 +674,7 @@ class DeviceSerializer(NetBoxModelSerializer):
     site = NestedSiteSerializer()
     location = NestedLocationSerializer(required=False, allow_null=True, default=None)
     rack = NestedRackSerializer(required=False, allow_null=True, default=None)
-    face = ChoiceField(choices=DeviceFaceChoices, allow_blank=True, default=lambda: '')
+    face = ChoiceField(choices=DeviceFaceChoices, allow_blank=True, default=lambda: '', allow_null=True)
     position = serializers.DecimalField(
         max_digits=4,
         decimal_places=1,
@@ -684,7 +684,7 @@ class DeviceSerializer(NetBoxModelSerializer):
         default=None
     )
     status = ChoiceField(choices=DeviceStatusChoices, required=False)
-    airflow = ChoiceField(choices=DeviceAirflowChoices, allow_blank=True, required=False)
+    airflow = ChoiceField(choices=DeviceAirflowChoices, allow_blank=True, required=False, allow_null=True)
     primary_ip = NestedIPAddressSerializer(read_only=True, allow_null=True)
     primary_ip4 = NestedIPAddressSerializer(required=False, allow_null=True)
     primary_ip6 = NestedIPAddressSerializer(required=False, allow_null=True)
@@ -719,7 +719,7 @@ class DeviceSerializer(NetBoxModelSerializer):
             'device_bay_count', 'module_bay_count', 'inventory_item_count',
         ]
 
-    @extend_schema_field(NestedDeviceSerializer)
+    @extend_schema_field(NestedDeviceSerializer(allow_null=True))
     def get_parent_device(self, obj):
         try:
             device_bay = obj.parent_bay
