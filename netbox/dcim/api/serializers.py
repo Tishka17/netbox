@@ -53,7 +53,7 @@ class CabledObjectSerializer(serializers.ModelSerializer):
 
         return None
 
-    @extend_schema_field(serializers.ListField)
+    @extend_schema_field(serializers.ListField(child=serializers.DictField()))
     def get_link_peers(self, obj):
         """
         Return the appropriate serializer for the link termination model.
@@ -84,7 +84,7 @@ class ConnectedEndpointsSerializer(serializers.ModelSerializer):
         if endpoints := obj.connected_endpoints:
             return f'{endpoints[0]._meta.app_label}.{endpoints[0]._meta.model_name}'
 
-    @extend_schema_field(serializers.ListField)
+    @extend_schema_field(serializers.ListField(child=serializers.DictField()))
     def get_connected_endpoints(self, obj):
         """
         Return the appropriate serializer for the type of connected object.
