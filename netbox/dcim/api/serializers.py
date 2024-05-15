@@ -84,7 +84,7 @@ class ConnectedEndpointsSerializer(serializers.ModelSerializer):
         if endpoints := obj.connected_endpoints:
             return f'{endpoints[0]._meta.app_label}.{endpoints[0]._meta.model_name}'
 
-    @extend_schema_field(serializers.ListField(child=serializers.DictField()))
+    @extend_schema_field(serializers.ListField(child=serializers.DictField(), allow_null=True))
     def get_connected_endpoints(self, obj):
         """
         Return the appropriate serializer for the type of connected object.
@@ -924,12 +924,12 @@ class InterfaceSerializer(NetBoxModelSerializer, CabledObjectSerializer, Connect
     parent = NestedInterfaceSerializer(required=False, allow_null=True)
     bridge = NestedInterfaceSerializer(required=False, allow_null=True)
     lag = NestedInterfaceSerializer(required=False, allow_null=True)
-    mode = ChoiceField(choices=InterfaceModeChoices, required=False, allow_blank=True)
+    mode = ChoiceField(choices=InterfaceModeChoices, required=False, allow_blank=True, allow_null=True)
     duplex = ChoiceField(choices=InterfaceDuplexChoices, required=False, allow_blank=True, allow_null=True)
-    rf_role = ChoiceField(choices=WirelessRoleChoices, required=False, allow_blank=True)
-    rf_channel = ChoiceField(choices=WirelessChannelChoices, required=False, allow_blank=True)
-    poe_mode = ChoiceField(choices=InterfacePoEModeChoices, required=False, allow_blank=True)
-    poe_type = ChoiceField(choices=InterfacePoETypeChoices, required=False, allow_blank=True)
+    rf_role = ChoiceField(choices=WirelessRoleChoices, required=False, allow_blank=True, allow_null=True)
+    rf_channel = ChoiceField(choices=WirelessChannelChoices, required=False, allow_blank=True, allow_null=True)
+    poe_mode = ChoiceField(choices=InterfacePoEModeChoices, required=False, allow_blank=True, allow_null=True)
+    poe_type = ChoiceField(choices=InterfacePoETypeChoices, required=False, allow_blank=True, allow_null=True)
     untagged_vlan = NestedVLANSerializer(required=False, allow_null=True)
     tagged_vlans = SerializedPKRelatedField(
         queryset=VLAN.objects.all(),
