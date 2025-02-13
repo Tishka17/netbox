@@ -1,3 +1,4 @@
+from django.db.models import Prefetch
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
 from drf_spectacular.types import OpenApiTypes
@@ -20,6 +21,7 @@ from netbox.api.pagination import StripCountAnnotationsPaginator
 from netbox.api.viewsets import NetBoxModelViewSet, MPTTLockedMixin
 from netbox.api.viewsets.mixins import SequentialBulkCreatesMixin
 from netbox.constants import NESTED_SERIALIZER_PREFIX
+from netbox.preferences import PREFERENCES
 from utilities.api import get_serializer_for_model
 from utilities.query_functions import CollateAsChar
 from utilities.utils import count_related
@@ -484,10 +486,35 @@ class PowerOutletViewSet(PathEndpointMixin, NetBoxModelViewSet):
 
 class InterfaceViewSet(PathEndpointMixin, NetBoxModelViewSet):
     queryset = Interface.objects.prefetch_related(
-        'device', 'module__module_bay', 'parent', 'bridge', 'lag', '_path', 'cable__terminations', 'wireless_lans',
-        'untagged_vlan', 'tagged_vlans', 'vrf', 'ip_addresses', 'fhrp_group_assignments', 'tags', 'l2vpn_terminations',
+         'module__module_bay', 'wireless_lans',
+        'untagged_vlan', 'tagged_vlans',  'ip_addresses', 'fhrp_group_assignments', 'tags', 'l2vpn_terminations',
         'vdcs',
+    ).select_related(
+        'parent', 'bridge', 'lag', '_path',
+        'vrf',
+        'cable',
+        'device',
+    ).prefetch_related(
+        Prefetch("cable__interfaces", queryset=Interface.objects.select_related("device")),
+        # 'cable__interfaces__device',
+        'cable__terminations',
     )
+
+
+    # queryset = Interface.objects.prefetch_related(
+    #     'module__module_bay', 'parent', 'bridge', 'lag', '_path', 'wireless_lans',
+    #     'untagged_vlan', 'tagged_vlans', 'vrf', 'fhrp_group_assignments', 'tags', 'l2vpn_terminations',
+    #     'vdcs',
+    # ).select_related(
+    #     'device',
+    #     'cable',
+    # ).prefetch_related(
+    #     'ip_addresses',
+    #     'cable__terminations',
+    #     'cable__interfaces', # my
+    # ).select_related(
+    #     'cable__interfaces__device', # my
+    # )
     serializer_class = serializers.InterfaceSerializer
     filterset_class = filtersets.InterfaceFilterSet
     brief_prefetch_fields = ['device']

@@ -590,6 +590,15 @@ class Interface(ModularComponentModel, BaseInterface, CabledObjectModel, PathEnd
         max_length=100,
         blank=True
     )
+    cable = models.ForeignKey(
+        to='dcim.Cable',
+        on_delete=models.SET_NULL,
+        related_name='interfaces',
+        blank=True,
+        null=True
+    )
+
+
     vdcs = models.ManyToManyField(
         to='dcim.VirtualDeviceContext',
         related_name='interfaces'

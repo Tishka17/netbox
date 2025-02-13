@@ -907,7 +907,11 @@ class PowerPortSerializer(NetBoxModelSerializer, CabledObjectSerializer, Connect
         ]
 
 
-class InterfaceSerializer(NetBoxModelSerializer, CabledObjectSerializer, ConnectedEndpointsSerializer):
+class InterfaceSerializer(
+    NetBoxModelSerializer,
+    CabledObjectSerializer,
+    # ConnectedEndpointsSerializer
+):
     url = serializers.HyperlinkedIdentityField(view_name='dcim-api:interface-detail')
     device = NestedDeviceSerializer()
     vdcs = SerializedPKRelatedField(
@@ -938,7 +942,7 @@ class InterfaceSerializer(NetBoxModelSerializer, CabledObjectSerializer, Connect
         many=True
     )
     vrf = NestedVRFSerializer(required=False, allow_null=True)
-    l2vpn_termination = NestedL2VPNTerminationSerializer(read_only=True, allow_null=True)
+    # l2vpn_termination = NestedL2VPNTerminationSerializer(read_only=True, allow_null=True)
     wireless_link = NestedWirelessLinkSerializer(read_only=True, allow_null=True)
     wireless_lans = SerializedPKRelatedField(
         queryset=WirelessLAN.objects.all(),
@@ -955,6 +959,25 @@ class InterfaceSerializer(NetBoxModelSerializer, CabledObjectSerializer, Connect
         allow_null=True
     )
     wwn = serializers.CharField(required=False, default=None, allow_blank=True, allow_null=True)
+    connected_endpoints = serializers.SerializerMethodField()
+    link_peers = serializers.SerializerMethodField()
+    link_peers_type = serializers.SerializerMethodField()
+
+    def get_connected_endpoints(self, obj):
+        if obj.cable:
+            serializer = get_serializer_for_model(obj, prefix=NESTED_SERIALIZER_PREFIX)
+            context = {'request': self.context['request']}
+            return [
+                serializer(iface, context=context).data
+                for iface in obj.cable.interfaces.all()
+                if iface.id != obj.id
+            ]
+        return []
+    def get_link_peers(self, obj):
+        return []
+
+    def get_link_peers_type(self, obj):
+        return None
 
     class Meta:
         model = Interface
@@ -962,9 +985,16 @@ class InterfaceSerializer(NetBoxModelSerializer, CabledObjectSerializer, Connect
             'id', 'url', 'display', 'device', 'vdcs', 'module', 'name', 'label', 'type', 'enabled', 'parent', 'bridge',
             'lag', 'mtu', 'mac_address', 'speed', 'duplex', 'wwn', 'mgmt_only', 'description', 'mode', 'rf_role',
             'rf_channel', 'poe_mode', 'poe_type', 'rf_channel_frequency', 'rf_channel_width', 'tx_power',
-            'untagged_vlan', 'tagged_vlans', 'mark_connected', 'cable', 'cable_end', 'wireless_link', 'link_peers',
-            'link_peers_type', 'wireless_lans', 'vrf', 'l2vpn_termination', 'connected_endpoints',
-            'connected_endpoints_type', 'connected_endpoints_reachable', 'tags', 'custom_fields', 'created',
+            'untagged_vlan', 'tagged_vlans', 'mark_connected', 'cable', 'cable_end', 'wireless_link',
+            'link_peers',
+            'link_peers_type',
+            'wireless_lans',
+            'vrf',
+            # 'l2vpn_termination',
+            'connected_endpoints',
+            # 'connected_endpoints_type',
+            # 'connected_endpoints_reachable',
+            'tags', 'custom_fields', 'created',
             'last_updated', 'count_ipaddresses', 'count_fhrp_groups', '_occupied',
         ]
 
