@@ -16,6 +16,7 @@ from dcim.fields import PathField
 from dcim.utils import decompile_path_node, object_to_path_node
 from netbox.models import ChangeLoggedModel, PrimaryModel
 from utilities.fields import ColorField
+from utilities.generics import GenericArrayForeignKey
 from utilities.querysets import RestrictedQuerySet
 from utilities.utils import to_meters
 from wireless.models import WirelessLink
@@ -485,8 +486,21 @@ class CablePath(models.Model):
             ct_id, _ = decompile_path_node(self.path[-1][0])
             return ContentType.objects.get_for_id(ct_id)
 
+
     @property
-    def path_objects(self):
+    def _path_decompiled(self):
+        res = []
+        for step in self.path:
+            nodes = []
+            for node in step:
+                nodes.append(decompile_path_node(node))
+            res.append(nodes)
+        return res
+
+    path_objects = GenericArrayForeignKey("_path_decompiled")
+
+    @property
+    def path_objects_old(self):
         """
         Cache and return the complete path as lists of objects, derived from their annotation within the path.
         """
