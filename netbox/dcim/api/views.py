@@ -1,3 +1,4 @@
+from django.db.models import Prefetch
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
 from drf_spectacular.types import OpenApiTypes
@@ -21,6 +22,7 @@ from netbox.api.viewsets import NetBoxModelViewSet, MPTTLockedMixin
 from netbox.api.viewsets.mixins import SequentialBulkCreatesMixin
 from netbox.constants import NESTED_SERIALIZER_PREFIX
 from utilities.api import get_serializer_for_model
+from utilities.generics import GenericPrefetch
 from utilities.query_functions import CollateAsChar
 from utilities.utils import count_related
 from virtualization.models import VirtualMachine
@@ -484,9 +486,24 @@ class PowerOutletViewSet(PathEndpointMixin, NetBoxModelViewSet):
 
 class InterfaceViewSet(PathEndpointMixin, NetBoxModelViewSet):
     queryset = Interface.objects.prefetch_related(
-        'device', 'module__module_bay', 'parent', 'bridge', 'lag', '_path', 'cable__terminations', 'wireless_lans',
+        'device', 'module__module_bay', 'parent', 'bridge', 'lag', 'cable__terminations', 'wireless_lans',
         'untagged_vlan', 'tagged_vlans', 'vrf', 'ip_addresses', 'fhrp_group_assignments', 'tags', 'l2vpn_terminations',
         'vdcs',
+        GenericPrefetch(
+            "cable__terminations__termination",
+            [
+                Interface.objects.prefetch_related("device"),
+            ],
+        ),
+        Prefetch(
+            "_path",
+            CablePath.objects.prefetch_related(
+                GenericPrefetch("path_objects", [
+                    Interface.objects.prefetch_related("device"),
+                    Cable.objects.prefetch_related("terminations"),
+                ]),
+            )
+        )
     )
     serializer_class = serializers.InterfaceSerializer
     filterset_class = filtersets.InterfaceFilterSet
