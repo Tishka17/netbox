@@ -53,7 +53,6 @@ class GenericArrayForeignKey(FieldCacheMixin, Field):
 
     # hack fo 4.2
     def get_prefetch_queryset(self, instances, queryset=None):
-        print(instances, queryset)
         return self.get_prefetch_querysets(instances, queryset)
 
     def get_prefetch_querysets(self, instances, querysets=None):

@@ -966,8 +966,7 @@ class InterfaceSerializer(NetBoxModelSerializer, CabledObjectSerializer, Connect
             'link_peers',
             'link_peers_type',
             'wireless_lans', 'vrf', 'l2vpn_termination',
-            # 'connected_endpoints',
-            'connected_endpoints_type', 'connected_endpoints_reachable',
+            'connected_endpoints', 'connected_endpoints_type', 'connected_endpoints_reachable',
             'tags', 'custom_fields', 'created',
             'last_updated', 'count_ipaddresses', 'count_fhrp_groups', '_occupied',
         ]
