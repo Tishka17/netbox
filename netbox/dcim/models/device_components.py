@@ -189,6 +189,11 @@ class CabledObjectModel(models.Model):
     @cached_property
     def link_peers(self):
         if self.cable:
+            return [
+                peer.termination
+                for peer in self.cable.terminations.all()
+                if peer.cable_end != self.cable_end
+            ]
             peers = self.cable.terminations.exclude(cable_end=self.cable_end).prefetch_related('termination')
             return [peer.termination for peer in peers]
         return []

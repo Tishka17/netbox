@@ -486,15 +486,18 @@ class PowerOutletViewSet(PathEndpointMixin, NetBoxModelViewSet):
 
 class InterfaceViewSet(PathEndpointMixin, NetBoxModelViewSet):
     queryset = Interface.objects.prefetch_related(
-        'device', 'module__module_bay', 'parent', 'bridge', 'lag', '_path__path_objects', 'cable__terminations', 'wireless_lans',
+        'device', 'module__module_bay', 'parent', 'bridge', 'lag', 'cable__terminations', 'wireless_lans',
         'untagged_vlan', 'tagged_vlans', 'vrf', 'ip_addresses', 'fhrp_group_assignments', 'tags', 'l2vpn_terminations',
         'vdcs',
-        # Prefetch(
-        #     "_path",
-        #     CablePath.objects.prefetch_related(
-        #         GenericPrefetch("path_objects", []),
-        #     )
-        # )
+        Prefetch(
+            "_path",
+            CablePath.objects.prefetch_related(
+                GenericPrefetch("path_objects", [
+                    Interface.objects.prefetch_related("device"),
+                    Cable.objects.prefetch_related("terminations")
+                ]),
+            )
+        )
     )
     serializer_class = serializers.InterfaceSerializer
     filterset_class = filtersets.InterfaceFilterSet
