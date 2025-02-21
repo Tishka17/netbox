@@ -33,7 +33,7 @@ class GenericArrayForeignKey(FieldCacheMixin, Field):
         return self.name
 
     def get_cache_name(self):
-        return self.name
+        return self.cache_name
 
     def _get_ids(self, instance):
         return getattr(instance, self.field)

@@ -16,7 +16,7 @@ from dcim.fields import PathField
 from dcim.utils import decompile_path_node, object_to_path_node
 from netbox.models import ChangeLoggedModel, PrimaryModel
 from utilities.fields import ColorField
-from utilities.generics import GenericArrayForeignKey
+from utilities.generics import GenericArrayForeignKey, backport
 from utilities.querysets import RestrictedQuerySet
 from utilities.utils import to_meters
 from wireless.models import WirelessLink
@@ -265,7 +265,7 @@ class CableTermination(ChangeLoggedModel):
         related_name='+'
     )
     termination_id = models.PositiveBigIntegerField()
-    termination = GenericForeignKey(
+    termination = backport.GenericForeignKey(
         ct_field='termination_type',
         fk_field='termination_id'
     )

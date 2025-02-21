@@ -489,12 +489,19 @@ class InterfaceViewSet(PathEndpointMixin, NetBoxModelViewSet):
         'device', 'module__module_bay', 'parent', 'bridge', 'lag', 'cable__terminations', 'wireless_lans',
         'untagged_vlan', 'tagged_vlans', 'vrf', 'ip_addresses', 'fhrp_group_assignments', 'tags', 'l2vpn_terminations',
         'vdcs',
+        # 'cable__terminations__termination',
+        GenericPrefetch(
+            "cable__terminations__termination",
+            [
+                Interface.objects.prefetch_related("device"),
+            ],
+        ),
         Prefetch(
             "_path",
             CablePath.objects.prefetch_related(
                 GenericPrefetch("path_objects", [
                     Interface.objects.prefetch_related("device"),
-                    Cable.objects.prefetch_related("terminations")
+                    Cable.objects.prefetch_related("terminations"),
                 ]),
             )
         )
